@@ -1,0 +1,117 @@
+<html xmlns="http://www.w3.org/1999/xhtml"	xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title>Insert title here</title>
+<link rel="stylesheet" href="file:///G:/Amazons3/src/main/resources/static/css/bootstrap.css" th:href="@{/css/bootstrap.css}" />
+
+</head>
+<body>
+
+<div class="row">
+    <div class="col-md-6 mx-auto p-0">
+        <div class="card">
+            <div class="login-box">
+					<div class="login-snip">
+						<div th:if="${login_error != null && login_error.length() > 0}"
+							class="row" >
+							<div class="col-md-2">
+								<div th:text="${login_error}" class="box inputError" style="color:red;"></div>
+							</div>
+							<div class="col-md-2"></div>
+						</div>
+						<div
+							th:if="${login_message != null && login_message.length() > 0}"
+							class="row" >
+							<div class="col-md-2"></div>
+							<div class="col-md-8">
+								<div th:text="${login_message}" class="box" style="color:red;"></div>
+							</div>
+							<div class="col-md-2"></div>
+						</div>
+						<div th:if="${createUserError != null && createUserError.length() > 0}">
+							<div class="row">
+								<div class="col-md-2"></div>
+								<div class="col-md-8">
+									<div th:text="${createUserError}" class="box inputError" style="color:red;"></div>
+								</div>
+								<div class="col-md-2"></div>
+							</div>
+						</div>
+						
+						
+						<input id="tab-1" type="radio" name="tab" class="sign-in" checked><label
+							for="tab-1" class="tab">Login</label> <input id="tab-2"
+							type="radio" name="tab" class="sign-up"><label
+							for="tab-2" class="tab">Sign Up</label>
+
+
+						<div class="login-space">
+							<div class="login">
+								<form action="#" th:action="@{/login_form}" method="post">
+									<div class="group">
+										<label for="user" class="label">Username</label> <input
+											th:if="${user_name_val != null && user_name_val.length() > 0}"
+											type="text" id="user_name" name="user_name"
+											th:value="${user_name_val}" class="input"> <input
+											th:unless="${user_name_val != null && user_name_val.length() > 0}"
+											type="text" id="user_name" name="user_name"
+											placeholder="User name" class="input">
+									</div>
+									<div class="group">
+										<label for="pass" class="label">Password</label> <input
+											type="password" id="password" name="password"
+											placeholder="Password" class="input">
+									</div>
+									<div class="group">
+										<input type="submit" class="button" value="Sign In">
+									</div>
+								</form>
+								<div class="hr"></div>
+								<div class="foot">
+									<a th:href="@{/forgot_password}">Forgot Password?</a>
+								</div>
+							</div>
+							
+							
+							
+							<div class="sign-up-form">
+							
+							
+								<form action="#" th:action="@{/create_user_form}" method="post">
+									<div class="group"
+										th:if="${userNameVal != null && userNameVal.length() > 0}">
+										<label for="user" class="label">Username</label> <input
+											type="text" id="user_name" name="user_name"
+											th:value="${userNameVal}" class="input">
+									</div>
+									<div class="group"
+										th:unless="${userNameVal != null && userNameVal.length() > 0}">
+										<label for="user" class="label">Username</label> <input
+											type="text" id="user_name" name="user_name"
+											placeholder="User name" class="input">
+									</div>
+									<div class="group">
+										<label for="email" class="label">Email</label> <input
+											type="text" id="email" name="email" placeholder="Email"
+											class="input">
+									</div>
+
+									<div class="group">
+										<input type="submit" class="button" value="Sign Up">
+									</div>
+								</form>
+								<div class="hr"></div>
+								<div class="foot">
+									<label for="tab-1">Already Member?</label>
+								</div>
+
+
+							</div>
+						</div>
+					</div>
+				</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

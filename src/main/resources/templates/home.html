@@ -1,31 +1,47 @@
-<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="utf-8" />
-<title>Product Manager</title>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css?family=Droid+Sans:400,700"
+	rel="stylesheet">
+<link rel="stylesheet"
+	href="https://rawgit.com/LeshikJanz/libraries/master/Bootstrap/baguetteBox.min.css">
+<link rel="stylesheet" href="resources/static/css/main.css" th:href="@{/css/s3.css}" />
+
+<title>S3 Gallery </title>
 </head>
 <body>
-	<div align="center">
-		<h1>S3 Images List</h1>
-		<br />
-		<table border="1" cellpadding="10" >
-			<thead>
-				<tr>
-					<th>Files ID</th>
 
-					<th>Actions</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr th:each="product : ${itemName}">
-					<td><img th:src="${product.key}"
-						style="width: 200px; height: 150px;" /></td>
-					<td><a th:href="@{/home/delete/(value=${product.value})}"
-						class="btn btn-danger">Delete</a></td>
-				</tr>
-			</tbody>
-		</table>
+	<div class="container gallery-container">
+
+		<h1>S3 Gallery</h1>
+
+		<div class="tz-gallery">
+
+			<div class="row">
+
+				<div class="col-sm-6 col-md-4" th:each="product : ${itemName}">
+					<a class="lightbox"
+						th:href="${product.key}"> 
+						<img th:src="${product.key}" />
+					</a>
+				</div>
+
+			</div>
+
+		</div>
+
 	</div>
+
+	<script
+		src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.8.1/baguetteBox.min.js"></script>
+	<script>
+		baguetteBox.run('.tz-gallery');
+	</script>
 </body>
 </html>

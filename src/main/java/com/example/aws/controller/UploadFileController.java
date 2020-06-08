@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -25,10 +27,10 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.example.aws.services.UserInfo;
 
 @Controller
-@RequestMapping("/home/")
-public class UploadFileController {
+public class UploadFileController extends AuthenticationBase {
 
 	@Autowired
 	private AmazonS3 s3client;
@@ -39,33 +41,47 @@ public class UploadFileController {
 	@Value("${s3.bucketName}")
 	private String bucketName;
 
-	
+	/*
+	 * @RequestMapping("/") public String display(){ //
+	 * model.addAttribute("now", "Test"); return "index"; }
+	 */
+
 	@PostMapping("/uploadFile")
-	public String uploadFile(@RequestPart(value = "file") MultipartFile multipartFile) {
+	public String uploadFile(@RequestPart(value = "file") MultipartFile multipartFile, Model model,
+			HttpServletRequest request) {
 
 		String fileUrl = "";
 		String status = null;
-		try {
 
-			// converting multipart file to file
-			File file = convertMultiPartToFile(multipartFile);
+		UserInfo info = (UserInfo) request.getSession().getAttribute(USER_SESSION_ATTR);
+		if (info != null) {
 
-			// filename
-			String fileName = multipartFile.getOriginalFilename();
+			try {
 
-			fileUrl = endpointUrl + "/" + bucketName + "/" + fileName;
+				// converting multipart file to file
+				File file = convertMultiPartToFile(multipartFile);
 
-			status = uploadFileTos3bucket(fileName, file);
+				// filename
+				String fileName = multipartFile.getOriginalFilename();
 
-			file.delete();
+				fileUrl = endpointUrl + fileName;
 
-		} catch (Exception e) {
+				status = uploadFileTos3bucket(fileName, file);
 
-			return "UploadController().uploadFile().Exception : " + e.getMessage();
+				file.delete();
 
+			} catch (Exception e) {
+
+				return "UploadController().uploadFile().Exception : " + e.getMessage();
+
+			}
+
+			model.addAttribute("upload", fileUrl);
+			return "redirect:listfile";
+		} else {
+			return "redirect:/";
 		}
 
-		return status + " " + fileUrl;
 	}
 
 	private File convertMultiPartToFile(MultipartFile file) throws IOException {
@@ -78,51 +94,60 @@ public class UploadFileController {
 
 	private String uploadFileTos3bucket(String fileName, File file) {
 		try {
-			s3client.putObject(new PutObjectRequest(bucketName, fileName, file)
-					.withCannedAcl(CannedAccessControlList.PublicRead));
+			s3client.putObject(
+					new PutObjectRequest(bucketName, fileName, file).withCannedAcl(CannedAccessControlList.PublicRead));
 		} catch (AmazonServiceException e) {
 			return "uploadFileTos3bucket().Uploading failed :" + e.getMessage();
 		}
 		return "Uploading Successfull -> ";
 	}
 
-	
 	@GetMapping("listfile")
-	public String listFile(Model model) {
-		
-		HashMap<String, String> bucket=new HashMap<String,String>();
-		String URL = "";
-		ListObjectsV2Result result = s3client.listObjectsV2(bucketName);
-        List<S3ObjectSummary> objects = result.getObjectSummaries();
-        for (S3ObjectSummary os : objects) {
-        	URL = endpointUrl + "" + os.getKey();
-        	//bucket.add(URL);
-        	//bucket.add(os.getKey());
-        	
-        	//bucket.put("url", URL);
-        	bucket.put(URL, os.getKey());
-            System.out.println("* " + os.getKey());
-        }
-        model.addAttribute("itemName", bucket);
-        
-        return "home";
+	public String listFile(Model model, HttpServletRequest request) {
+		System.out.println("Hello World");
+
+		UserInfo info = (UserInfo) request.getSession().getAttribute(USER_SESSION_ATTR);
+		if (info != null) {
+
+			HashMap<String, String> bucket = new HashMap<String, String>();
+			String URL = "";
+			ListObjectsV2Result result = s3client.listObjectsV2(bucketName);
+			List<S3ObjectSummary> objects = result.getObjectSummaries();
+			for (S3ObjectSummary os : objects) {
+				URL = endpointUrl + "" + os.getKey();
+				// bucket.add(URL);
+				// bucket.add(os.getKey());
+
+				// bucket.put("url", URL);
+				bucket.put(URL, os.getKey());
+				System.out.println("* " + os.getKey());
+			}
+			model.addAttribute("itemName", bucket);
+			return "application";
+		} else {
+			return "redirect:/";
+		}
+
 	}
-	
+
 	@RequestMapping(value = "/delete", method = RequestMethod.GET)
-	public String deleteFile(@RequestParam(name="value")String key,Model model) {
-		
-		//List<String> bucket=new ArrayList<String>();
-		try {
-            s3client.deleteObject(bucketName, key);
-        } catch (AmazonServiceException e) {
-            System.err.println(e.getErrorMessage());
-            System.exit(1);
-        }
-        System.out.println("Done!");
-        
-        
-        
-        return "redirect:/home/listfile";
+	public String deleteFile(@RequestParam(name = "value") String key, Model model, HttpServletRequest request) {
+		UserInfo info = (UserInfo) request.getSession().getAttribute(USER_SESSION_ATTR);
+		if (info != null) {
+			// List<String> bucket=new ArrayList<String>();
+			try {
+				s3client.deleteObject(bucketName, key);
+			} catch (AmazonServiceException e) {
+				System.err.println(e.getErrorMessage());
+				System.exit(1);
+			}
+			System.out.println("Done!");
+
+			return "redirect:/listfile";
+		} else {
+			return "redirect:/";
+		}
+
 	}
 
 }
